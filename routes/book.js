@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const bookController = require("../controllers/book");
 
-router.get("/", (req, res) => {
-  res.send("Bienvenue sur l'API du vieux grimoire !");
-});
+router.get("/", bookController.getAllBooks);
 
 module.exports = router;
