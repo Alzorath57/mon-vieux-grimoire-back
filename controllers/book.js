@@ -10,6 +10,19 @@ exports.getAllBooks = async (req, res) => {
   }
 };
 
+// méthode Get pour récupération d'un livre par son ID
+exports.getBook = async (req, res) => {
+  try {
+    const searchBook = await Book.findById(req.params.id);
+    if (!searchBook) {
+      return res.status(404).json({ error: "Livre introuvable" });
+    }
+    res.status(200).json(searchBook);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // méthode Post pour création d'un nouveau livre
 exports.createBook = async (req, res) => {
   const bookObject = JSON.parse(req.body.book);
