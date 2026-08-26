@@ -72,3 +72,24 @@ exports.updateBook = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+// méthode Delete pour suppression d'un livre
+exports.deleteBook = async (req, res) => {
+  const book = await Book.findById(req.params.id);
+  if (!book) {
+    return res.status(404).json({ error: "Livre introuvable" });
+  }
+  try {
+    const parts = book.imageUrl.split("/images/");
+    const filename = parts[parts.length - 1];
+    const deletedBook = await Book.findByIdAndDelete(req.params.id);
+    fs.unlink(`images/${filename}`, (err) => {
+      if (err) {
+        console.error("Erreur lors de la suppression de l'image :", err);
+      }
+    });
+    res.status(200).json({ message: "Livre supprimé avec succès" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
