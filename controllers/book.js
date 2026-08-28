@@ -42,9 +42,15 @@ exports.createBook = async (req, res) => {
 
 // méthode Put pour mise à jour d'un livre
 exports.updateBook = async (req, res) => {
+  const oldBook = await Book.findById(req.params.id);
+  if (!oldBook) {
+    return res.status(404).json({ error: "Livre introuvable" });
+  }
+  if (oldBook.userId !== req.auth.userId) {
+    return res.status(403).json({ error: "unauthorized request" });
+  }
   let bookObject;
   if (req.file) {
-    const oldBook = await Book.findById(req.params.id);
     const parts = oldBook.imageUrl.split("/images/");
     const filename = parts[parts.length - 1];
     fs.unlink(`images/${filename}`, (err) => {
