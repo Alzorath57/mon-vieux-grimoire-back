@@ -1,7 +1,11 @@
 const fs = require("fs");
 const Book = require("../models/Book");
 
-// méthode Get pour récupération de tous les livres
+/**
+ * Récupère tous les livres de la base de données.
+ * @param {import('express').Request} req - La requête Express.
+ * @param {import('express').Response} res - La réponse Express.
+ */
 exports.getAllBooks = async (req, res) => {
   try {
     const books = await Book.find();
@@ -11,7 +15,11 @@ exports.getAllBooks = async (req, res) => {
   }
 };
 
-// méthode Get pour récupération d'un livre par son ID
+/**
+ * Récupère un livre de la base de données par son id.
+ * @param {import('express').Request} req - La requête Express.
+ * @param {import('express').Response} res - La réponse Express.
+ */
 exports.getBook = async (req, res) => {
   try {
     const searchBook = await Book.findById(req.params.id);
@@ -24,7 +32,12 @@ exports.getBook = async (req, res) => {
   }
 };
 
-// méthode Post pour création d'un nouveau livre
+/**
+ * Créé un livre dans la base de données.
+ * Nécessite un token JWT valide (header Authorization: Bearer) appartenant au propriétaire du livre.
+ * @param {import('express').Request} req - La requête Express.
+ * @param {import('express').Response} res - La réponse Express.
+ */
 exports.createBook = async (req, res) => {
   const bookObject = JSON.parse(req.body.book);
   const book = new Book({
@@ -40,7 +53,12 @@ exports.createBook = async (req, res) => {
   }
 };
 
-// méthode Put pour mise à jour d'un livre
+/**
+ * Modifie un livre de la base de données par son id.
+ * Nécessite un token JWT valide (header Authorization: Bearer) appartenant au propriétaire du livre.
+ * @param {import('express').Request} req - La requête Express.
+ * @param {import('express').Response} res - La réponse Express.
+ */
 exports.updateBook = async (req, res) => {
   const oldBook = await Book.findById(req.params.id);
   if (!oldBook) {
@@ -80,11 +98,19 @@ exports.updateBook = async (req, res) => {
   }
 };
 
-// méthode Delete pour suppression d'un livre
+/**
+ * Supprime un livre de la base de données par son id.
+ * Nécessite un token JWT valide (header Authorization: Bearer) appartenant au propriétaire du livre.
+ * @param {import('express').Request} req - La requête Express.
+ * @param {import('express').Response} res - La réponse Express.
+ */
 exports.deleteBook = async (req, res) => {
   const book = await Book.findById(req.params.id);
   if (!book) {
     return res.status(404).json({ error: "Livre introuvable" });
+  }
+  if (book.userId !== req.auth.userId) {
+    return res.status(403).json({ error: "unauthorized request" });
   }
   try {
     const parts = book.imageUrl.split("/images/");
