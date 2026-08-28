@@ -29,6 +29,7 @@ exports.createBook = async (req, res) => {
   const bookObject = JSON.parse(req.body.book);
   const book = new Book({
     ...bookObject,
+    userId: req.auth.userId,
     imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
   });
   try {
