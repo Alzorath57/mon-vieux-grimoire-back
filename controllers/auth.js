@@ -2,6 +2,11 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+/**
+ * Création d'un utilisateur dans la base de données.
+ * @param {import('express').Request} req - La requête Express.
+ * @param {import('express').Response} res - La réponse Express.
+ */
 exports.signup = async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
@@ -15,6 +20,11 @@ exports.signup = async (req, res) => {
   }
 };
 
+/**
+ * Connecte un utilisateur et lui renvoie un token JWT.
+ * @param {import('express').Request} req - La requête Express.
+ * @param {import('express').Response} res - La réponse Express.
+ */
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
