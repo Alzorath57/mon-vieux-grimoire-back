@@ -126,3 +126,38 @@ exports.deleteBook = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+/**
+ * Ajout de la note dans la base de données par l'id du livre et de l'utilisateur.
+ * Nécessite un token JWT valide (header Authorization: Bearer).
+ * @param {import('express').Request} req - La requête Express.
+ * @param {import('express').Response} res - La réponse Express.
+ */
+exports.rateBook = async (req, res) => {
+  const book = await Book.findById(req.params.id);
+  if (!book) {
+    return res.status(404).json({ error: "Livre introuvable" });
+  }
+  const existingRating = book.ratings.find(
+    (rating) => rating.userId === req.auth.userId,
+  );
+  if (existingRating) {
+    return res.status(400).json({ error: "Tu as déja noté ce livre" });
+  }
+  if (req.body.rating > 5 || req.body.rating < 0) {
+    return res.status(400).json({ error: "La note doit être entre 0 et 5" });
+  }
+  book.ratings.push({
+    userId: req.auth.userId,
+    grade: req.body.rating,
+  });
+  const sum = book.ratings.reduce((total, rating) => total + rating.grade, 0);
+  const averageRating = sum / book.ratings.length;
+  book.averageRating = averageRating;
+  try {
+    await book.save();
+    res.status(200).json(book);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
