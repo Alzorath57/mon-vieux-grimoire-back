@@ -161,3 +161,17 @@ exports.rateBook = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+/**
+ * Affiche les 3 livres de la base de donnée ayant la meilleur note moyenne.
+ * @param {import('express').Request} req - La requête Express.
+ * @param {import('express').Response} res - La réponse Express.
+ */
+exports.bestrating = async (req, res) => {
+  try {
+    const bestBooks = await Book.find().sort({ averageRating: -1 }).limit(3);
+    res.status(200).json(bestBooks);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
