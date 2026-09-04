@@ -1,5 +1,13 @@
 const fs = require("fs");
 const Book = require("../models/Book");
+const sharp = require("sharp");
+const crypto = require("crypto");
+const path = require("path");
+const MIME_TYPES = {
+  "image/jpg": "jpg",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+};
 
 /**
  * Récupère tous les livres de la base de données.
@@ -39,11 +47,18 @@ exports.getBook = async (req, res) => {
  * @param {import('express').Response} res - La réponse Express.
  */
 exports.createBook = async (req, res) => {
+  const name = path.parse(req.file.originalname).name.split(" ").join("_");
+  const extension = MIME_TYPES[req.file.mimetype];
+  const key = crypto.randomBytes(16).toString("hex");
+  const filename = `${name}_${key}.${extension}`;
   const bookObject = JSON.parse(req.body.book);
+  await sharp(req.file.buffer)
+    .jpeg({ quality: 80 })
+    .toFile(`images/${filename}`);
   const book = new Book({
     ...bookObject,
     userId: req.auth.userId,
-    imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
+    imageUrl: `${req.protocol}://${req.get("host")}/images/${filename}`,
   });
   try {
     await book.save();
