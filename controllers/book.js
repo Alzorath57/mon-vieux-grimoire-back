@@ -1,13 +1,6 @@
 const fs = require("fs");
 const Book = require("../models/Book");
-const sharp = require("sharp");
-const crypto = require("crypto");
-const path = require("path");
-const MIME_TYPES = {
-  "image/jpg": "jpg",
-  "image/jpeg": "jpg",
-  "image/png": "png",
-};
+const optimizeImage = require("../utils/image");
 
 /**
  * Récupère tous les livres de la base de données.
@@ -47,14 +40,8 @@ exports.getBook = async (req, res) => {
  * @param {import('express').Response} res - La réponse Express.
  */
 exports.createBook = async (req, res) => {
-  const name = path.parse(req.file.originalname).name.split(" ").join("_");
-  const extension = MIME_TYPES[req.file.mimetype];
-  const key = crypto.randomBytes(16).toString("hex");
-  const filename = `${name}_${key}.${extension}`;
+  const filename = await optimizeImage(req.file);
   const bookObject = JSON.parse(req.body.book);
-  await sharp(req.file.buffer)
-    .jpeg({ quality: 80 })
-    .toFile(`images/${filename}`);
   const book = new Book({
     ...bookObject,
     userId: req.auth.userId,
@@ -83,17 +70,19 @@ exports.updateBook = async (req, res) => {
     return res.status(403).json({ error: "unauthorized request" });
   }
   let bookObject;
+  
   if (req.file) {
+    const filename = await optimizeImage(req.file);
     const parts = oldBook.imageUrl.split("/images/");
-    const filename = parts[parts.length - 1];
-    fs.unlink(`images/${filename}`, (err) => {
+    const oldfilename = parts[parts.length - 1];
+    fs.unlink(`images/${oldfilename}`, (err) => {
       if (err) {
         console.error("Erreur lors de la suppression de l'image :", err);
       }
     });
     bookObject = {
       ...(req.body.book ? JSON.parse(req.body.book) : oldBook.toObject()),
-      imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
+      imageUrl: `${req.protocol}://${req.get("host")}/images/${filename}`,
     };
   } else {
     bookObject = { ...req.body };
