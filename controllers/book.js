@@ -41,6 +41,9 @@ exports.getBook = async (req, res) => {
  */
 exports.createBook = async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Aucune image envoyée" });
+    }
     const filename = await optimizeImage(req.file);
     const bookObject = JSON.parse(req.body.book);
     const book = new Book({
