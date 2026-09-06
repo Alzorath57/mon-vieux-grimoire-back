@@ -148,6 +148,9 @@ exports.rateBook = async (req, res) => {
     if (existingRating) {
       return res.status(400).json({ error: "Tu as déja noté ce livre" });
     }
+    if (!Number.isFinite(req.body.rating)) {
+      return res.status(400).json({ error: "La note doit être un nombre." });
+    }
     if (req.body.rating > 5 || req.body.rating < 0) {
       return res.status(400).json({ error: "La note doit être entre 0 et 5" });
     }
