@@ -121,7 +121,7 @@ exports.deleteBook = async (req, res) => {
     }
     const parts = book.imageUrl.split("/images/");
     const filename = parts[parts.length - 1];
-    const deletedBook = await Book.findByIdAndDelete(req.params.id);
+    await Book.findByIdAndDelete(req.params.id);
     fs.unlink(`images/${filename}`, (err) => {
       if (err) {
         console.error("Erreur lors de la suppression de l'image :", err);
